@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 public class ItemRequestServiceImpl implements ItemRequestService {
     private final ItemRequestRepository itemRequestRepository;
     private final UserRepository userRepository;
+
     @Override
     public ItemRequestDto get(Long id) {
         return itemRequestRepository.findOne(id)

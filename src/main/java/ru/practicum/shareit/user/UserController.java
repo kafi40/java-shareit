@@ -15,7 +15,6 @@ public class UserController {
     public UserDto get(@PathVariable Long id) {
         return userService.get(id);
     }
-    
 
     @PostMapping
     public UserDto create(@Valid @RequestBody UserDto request) {
