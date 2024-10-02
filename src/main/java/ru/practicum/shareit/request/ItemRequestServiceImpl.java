@@ -53,7 +53,9 @@ public class ItemRequestServiceImpl implements ItemRequestService {
             throw new NoPermissionException("Недостаточно прав для данного запроса");
         }
 
-        ItemRequestMapper.updateField(itemRequest, request);
+        if (request.getDescription() != null) {
+            itemRequest.setDescription(request.getDescription());
+        }
         return ItemRequestMapper.mapTo(itemRequest);
     }
 

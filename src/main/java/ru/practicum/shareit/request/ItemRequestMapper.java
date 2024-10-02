@@ -21,10 +21,4 @@ public class ItemRequestMapper {
                 .created(itemRequestDto.getCreated())
                 .build();
     }
-
-    public static void updateField(ItemRequest itemRequest, ItemRequestDto itemRequestDto) {
-        if (itemRequestDto.getDescription() != null) {
-            itemRequest.setDescription(itemRequestDto.getDescription());
-        }
-    }
 }

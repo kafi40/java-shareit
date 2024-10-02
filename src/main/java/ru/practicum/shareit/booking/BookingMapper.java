@@ -25,12 +25,4 @@ public class BookingMapper {
                 .status(bookingDto.getStatus())
                 .build();
     }
-
-    public static void updateField(Booking booking, BookingDto bookingDto) {
-        booking.setStart(bookingDto.getStart());
-        booking.setEnd(bookingDto.getEnd());
-        booking.setItem(ItemMapper.mapFrom(bookingDto.getItem()));
-        booking.setBooker(UserMapper.mapFrom(bookingDto.getBooker()));
-        booking.setStatus(bookingDto.getStatus());
-    }
 }

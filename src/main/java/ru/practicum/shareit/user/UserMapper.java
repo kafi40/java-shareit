@@ -18,12 +18,4 @@ public class UserMapper {
                 .email(userDto.getEmail())
                 .build();
     }
-
-    public static void updateField(User user, UserDto userDto) {
-        if (userDto.getName() != null)
-            user.setName(userDto.getName());
-
-        if (userDto.getEmail() != null)
-            user.setEmail(userDto.getEmail());
-    }
 }

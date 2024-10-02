@@ -23,19 +23,4 @@ public class ItemMapper {
                 .itemRequest(itemDto.getItemRequestDto() != null ? ItemRequestMapper.mapFrom(itemDto.getItemRequestDto()) : null)
                 .build();
     }
-
-    public static void updateField(Item item, ItemDto itemDto) {
-        if (itemDto.getName() != null)
-            item.setName(itemDto.getName());
-
-        if (itemDto.getDescription() != null)
-            item.setDescription(itemDto.getDescription());
-
-        if (itemDto.getAvailable() != null)
-            item.setAvailable(itemDto.getAvailable());
-
-        if (itemDto.getItemRequestDto() != null) {
-            item.setItemRequest(ItemRequestMapper.mapFrom(itemDto.getItemRequestDto()));
-        }
-    }
 }

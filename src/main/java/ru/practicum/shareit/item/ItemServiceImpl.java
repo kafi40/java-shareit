@@ -6,6 +6,7 @@ import ru.practicum.shareit.exception.NoPermissionException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.ItemRequestMapper;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
@@ -62,7 +63,18 @@ public class ItemServiceImpl implements ItemService {
             throw new NoPermissionException("Недостаточно прав для данного запроса");
         }
 
-        ItemMapper.updateField(item, request);
+        if (request.getName() != null)
+            item.setName(request.getName());
+
+        if (request.getDescription() != null)
+            item.setDescription(request.getDescription());
+
+        if (request.getAvailable() != null)
+            item.setAvailable(request.getAvailable());
+
+        if (request.getItemRequestDto() != null) {
+            item.setItemRequest(ItemRequestMapper.mapFrom(request.getItemRequestDto()));
+        }
         return ItemMapper.mapTo(item);
     }
 

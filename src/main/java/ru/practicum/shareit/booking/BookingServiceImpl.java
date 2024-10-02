@@ -8,6 +8,7 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.exception.DateTimeAlreadyTakenException;
 import ru.practicum.shareit.exception.NoPermissionException;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.util.Intersection;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,18 +41,37 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDto patch(Long id, Long userId, BookingDto request) {
-        if (!request.isHasPermissionToField(userId)) {
-            throw new NoPermissionException("Недостаточно прав для данного запроса");
-        }
-
         if (request.getStart() != null || request.getEnd() != null) {
             checkTimeIntersection(request);
         }
 
         Booking booking = bookingRepository.findOne(id)
-                .orElseThrow(() -> new NotFoundException("Бронирование> с ID = " + id + " не найден"));
+                .orElseThrow(() -> new NotFoundException("Бронирование с ID = " + id + " не найдено"));
 
-        BookingMapper.updateField(booking, request);
+        Long bookerId = booking.getBooker().getId();
+        Long ownerId = booking.getItem().getOwner().getId();
+        if (request.getStart() != null && userId.equals(bookerId)) {
+            booking.setStart(request.getStart());
+        }
+        if (request.getEnd() != null && userId.equals(bookerId)) {
+            booking.setEnd(request.getEnd());
+        }
+        if (request.getStatus() != null) {
+            if (userId.equals(bookerId)) {
+                if (request.getStatus() == BookingStatus.CANCELED) {
+                    booking.setStatus(request.getStatus());
+                } else {
+                    throw new NoPermissionException("Недостаточно прав для данного запроса");
+                }
+            } else if (userId.equals(ownerId)) {
+                switch (request.getStatus()) {
+                    case APPROVED, REJECTED -> booking.setStatus(request.getStatus());
+                    default -> throw new NoPermissionException("Недостаточно прав для данного запроса");
+                }
+            } else {
+                throw new NoPermissionException("Недостаточно прав для данного запроса");
+            }
+        }
         return BookingMapper.mapTo(booking);
     }
 
@@ -71,7 +91,12 @@ public class BookingServiceImpl implements BookingService {
         bookingRepository.findAll().stream()
                 .filter(booking -> booking.getItem().getId().equals(request.getItem().getId()))
                 .peek(booking -> {
-                    if (booking.isCross(request.getStart(), request.getEnd())) {
+                    if (Intersection.timeIntersection(
+                            booking.getStart(),
+                            booking.getEnd(),
+                            request.getStart(),
+                            request.getEnd())
+                    ) {
                         if (booking.getStatus().equals(BookingStatus.APPROVED)) {
                             throw new DateTimeAlreadyTakenException("Выбранное время уже забронировано");
                         }

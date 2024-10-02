@@ -19,26 +19,4 @@ public class BookingDto {
     private ItemDto item;
     private UserDto booker;
     private BookingStatus status;
-
-    public boolean isHasPermissionToField(Long userId) {
-        if (booker.getId().equals(userId)) {
-            return !status.equals(BookingStatus.APPROVED) && !status.equals(BookingStatus.REJECTED);
-        } else if (item.getOwner().getId().equals(userId)) {
-            if (hasField(start, end, item, booker)) {
-                return false;
-            }
-            return !status.equals(BookingStatus.WAITING) && !status.equals(BookingStatus.CANCELED);
-        } else {
-            return false;
-        }
-    }
-
-    private boolean hasField(Object... fields) {
-        for (Object field : fields) {
-            if (field != null) {
-                return false;
-            }
-        }
-        return true;
-    }
 }

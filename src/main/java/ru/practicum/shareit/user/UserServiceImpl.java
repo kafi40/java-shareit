@@ -35,7 +35,11 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findOne(id)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID = " + id + " не найден"));
 
-        UserMapper.updateField(user, request);
+        if (request.getName() != null)
+            user.setName(request.getName());
+
+        if (request.getEmail() != null)
+            user.setEmail(request.getEmail());
         return UserMapper.mapTo(user);
     }
 
