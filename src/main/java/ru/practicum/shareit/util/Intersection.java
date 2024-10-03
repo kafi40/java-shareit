@@ -3,8 +3,8 @@ package ru.practicum.shareit.util;
 import java.time.LocalDateTime;
 
 public interface Intersection {
-    static boolean timeIntersection(LocalDateTime s1, LocalDateTime e1, LocalDateTime s2, LocalDateTime e2) {
-        return !s1.isBefore(s2) && !s1.isAfter(e2) ||
-                e1.isBefore(e2) && e1.isAfter(s2);
+    static boolean timeIntersection(LocalDateTime start1, LocalDateTime end1, LocalDateTime start2, LocalDateTime end2) {
+        return !start1.isBefore(start2) && !start1.isAfter(end2) ||
+                end1.isBefore(end2) && end1.isAfter(start2);
     }
 }
