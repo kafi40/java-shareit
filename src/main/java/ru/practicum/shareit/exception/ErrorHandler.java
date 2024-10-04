@@ -1,11 +1,16 @@
 package ru.practicum.shareit.exception;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 
 @RestControllerAdvice
 public class ErrorHandler {
@@ -18,7 +23,19 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> headerExpectedException(final HeaderExpectedException e) {
+    public Map<String, String> missingRequestHeaderException(final MissingRequestHeaderException e) {
+        return Map.of("error:", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> itemIsUnavailableException(final ItemIsUnavailableException e) {
+        return Map.of("error:", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> dateTimeValueInvalid(final DateTimeValueInvalid e) {
         return Map.of("error:", e.getMessage());
     }
 
@@ -32,6 +49,22 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public Map<String, String> noPermissionException(final NoPermissionException e) {
         return Map.of("error:", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> methodArgumentNotValidException(final MethodArgumentNotValidException e) {
+        return Map.of("error:", Objects.requireNonNull(
+                e.getBindingResult().getAllErrors().getFirst().getDefaultMessage())
+        );
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handlerMethodValidationException(final HandlerMethodValidationException e) {
+        return Map.of("error:", Objects.requireNonNull(
+                e.getAllValidationResults().getFirst().getResolvableErrors().getFirst().getDefaultMessage())
+        );
     }
 
 

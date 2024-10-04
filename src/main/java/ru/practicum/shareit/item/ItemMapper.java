@@ -1,26 +1,18 @@
 package ru.practicum.shareit.item;
 
-import ru.practicum.shareit.item.dto.ItemDto;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants;
+import ru.practicum.shareit.item.dto.ItemModify;
+import ru.practicum.shareit.item.dto.ItemResponse;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.request.ItemRequestMapper;
 
-public class ItemMapper {
-    public static ItemDto mapTo(Item item) {
-        return ItemDto.builder()
-                .id(item.getId())
-                .name(item.getName())
-                .description(item.getDescription())
-                .available(item.getAvailable())
-                .itemRequestDto(item.getItemRequest() != null ? ItemRequestMapper.mapTo(item.getItemRequest()) : null)
-                .build();
-    }
+import java.util.List;
 
-    public static Item mapFrom(ItemDto itemDto) {
-        return Item.builder()
-                .name(itemDto.getName())
-                .description(itemDto.getDescription())
-                .available(itemDto.getAvailable())
-                .itemRequest(itemDto.getItemRequestDto() != null ? ItemRequestMapper.mapFrom(itemDto.getItemRequestDto()) : null)
-                .build();
-    }
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+public interface ItemMapper {
+    ItemResponse toItemResponse(Item item);
+
+    List<ItemResponse> toItemResponseList(List<Item> items);
+
+    Item toItem(ItemModify itemModify);
 }

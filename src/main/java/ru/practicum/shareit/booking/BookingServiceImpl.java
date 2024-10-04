@@ -2,50 +2,71 @@ package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.BookingModify;
+import ru.practicum.shareit.booking.dto.BookingResponse;
 import ru.practicum.shareit.booking.enums.BookingStatus;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.exception.DateTimeAlreadyTakenException;
+import ru.practicum.shareit.exception.DateTimeValueInvalid;
+import ru.practicum.shareit.exception.ItemIsUnavailableException;
 import ru.practicum.shareit.exception.NoPermissionException;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.util.Intersection;
+import ru.practicum.shareit.item.ItemRepository;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
+    private final UserRepository userRepository;
+    private final ItemRepository itemRepository;
+    private final BookingMapper bookingMapper;
 
     @Override
-    public BookingDto get(Long id) {
-        return bookingRepository.findOne(id)
-                .map(BookingMapper::mapTo)
+    public BookingResponse get(Long id) {
+        return bookingRepository.findById(id)
+                .map(bookingMapper::toBookingResponse)
                 .orElseThrow(() -> new NotFoundException("Бронирование> с ID = " + id + " не найден"));
     }
 
     @Override
-    public List<BookingDto> getAll() {
-        return bookingRepository.findAll().stream()
-                .map(BookingMapper::mapTo)
-                .collect(Collectors.toList());
+    public List<BookingResponse> getAll() {
+        List<Booking> bookings = bookingRepository.findAll();
+        return bookingMapper.toBookingResponseList(bookings);
     }
 
     @Override
-    public BookingDto create(Long userId, BookingDto request) {
-        checkTimeIntersection(request);
-        Booking booking = bookingRepository.save(BookingMapper.mapFrom(request));
-        return BookingMapper.mapTo(booking);
-    }
-
-    @Override
-    public BookingDto patch(Long id, Long userId, BookingDto request) {
-        if (request.getStart() != null || request.getEnd() != null) {
-            checkTimeIntersection(request);
+    public BookingResponse create(Long userId, BookingModify request) {
+//        checkTimeIntersection(request);
+        if (!request.getStart().isBefore(request.getEnd())) {
+            throw new DateTimeValueInvalid("Некорректно заданы значения начала и окончания бронирования");
         }
+        request.setStatus(BookingStatus.WAITING);
+        User booker = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с ID = " + userId + " не найден"));
 
-        Booking booking = bookingRepository.findOne(id)
+        Item item = itemRepository.findById(request.getItemId())
+                .orElseThrow(() -> new NotFoundException("Предмет с ID = " + request.getItemId() + " не найден"));
+        if (!item.getAvailable()) {
+            throw new ItemIsUnavailableException("Предмет недоступен");
+        }
+        Booking booking = bookingMapper.toBooking(request);
+        booking.setBooker(booker);
+        booking.setItem(item);
+        booking = bookingRepository.save(booking);
+        return bookingMapper.toBookingResponse(booking);
+    }
+
+    @Override
+    public BookingResponse patch(Long id, Long userId, BookingModify request) {
+//        if (request.getStart() != null || request.getEnd() != null) {
+//            checkTimeIntersection(request);
+//        }
+
+        Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Бронирование с ID = " + id + " не найдено"));
 
         Long bookerId = booking.getBooker().getId();
@@ -72,36 +93,51 @@ public class BookingServiceImpl implements BookingService {
                 throw new NoPermissionException("Недостаточно прав для данного запроса");
             }
         }
-        return BookingMapper.mapTo(booking);
+        booking = bookingRepository.save(bookingMapper.toBooking(request));
+        return bookingMapper.toBookingResponse(booking);
     }
 
     @Override
     public void delete(Long id, Long userId) {
-        Booking booking = bookingRepository.findOne(id)
+        Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Бронирование> с ID = " + id + " не найден"));
 
         if (!booking.getBooker().getId().equals(userId)) {
             throw new NoPermissionException("Недостаточно прав для данного запроса");
         }
 
-        bookingRepository.delete(id);
+        bookingRepository.deleteById(id);
     }
 
-    private void checkTimeIntersection(BookingDto request) {
-        bookingRepository.findAll().stream()
-                .filter(booking -> booking.getItem().getId().equals(request.getItem().getId()))
-                .peek(booking -> {
-                    if (Intersection.timeIntersection(
-                            booking.getStart(),
-                            booking.getEnd(),
-                            request.getStart(),
-                            request.getEnd())
-                    ) {
-                        if (booking.getStatus().equals(BookingStatus.APPROVED)) {
-                            throw new DateTimeAlreadyTakenException("Выбранное время уже забронировано");
-                        }
-                    }
-                })
-                .close();
+    @Override
+    public BookingResponse acceptBooking(Long id, Long userId, Boolean isAccept) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Бронирование> с ID = " + id + " не найден"));
+        if (booking.getItem().getOwner().getId().equals(userId)) {
+            booking.setStatus(isAccept ? BookingStatus.APPROVED : BookingStatus.REJECTED);
+            booking = bookingRepository.save(booking);
+            return bookingMapper.toBookingResponse(booking);
+        } else {
+            throw new NoPermissionException("Недостаточно прав для данного запроса");
+        }
     }
+
+
+//    private void checkTimeIntersection(BookingModify request) {
+//        bookingRepository.findAll().stream()
+//                .filter(booking -> booking.getItem().getId().equals(request.getItem().getId()))
+//                .peek(booking -> {
+//                    if (Intersection.timeIntersection(
+//                            booking.getStart(),
+//                            booking.getEnd(),
+//                            request.getStart(),
+//                            request.getEnd())
+//                    ) {
+//                        if (booking.getStatus().equals(BookingStatus.APPROVED)) {
+//                            throw new DateTimeAlreadyTakenException("Выбранное время уже забронировано");
+//                        }
+//                    }
+//                })
+//                .close();
+//    }
 }

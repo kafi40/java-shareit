@@ -4,7 +4,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.request.dto.ItemRequestDto;
+import ru.practicum.shareit.request.dto.ItemRequestModify;
+import ru.practicum.shareit.request.dto.ItemRequestResponse;
 
 import java.util.List;
 
@@ -15,24 +16,24 @@ public class ItemRequestController {
     private final ItemRequestService itemRequestService;
 
     @GetMapping("/{id}")
-    public ItemRequestDto get(@PathVariable Long id) {
+    public ItemRequestResponse get(@PathVariable Long id) {
         return itemRequestService.get(id);
     }
 
     @GetMapping
-    public List<ItemRequestDto> getAll() {
+    public List<ItemRequestResponse> getAll() {
         return itemRequestService.getAll();
     }
 
     @PostMapping
-    public ItemRequestDto create(@NotNull @Positive @RequestHeader("X-Sharer-User-Id") Long userId,
-                                 ItemRequestDto request) {
+    public ItemRequestResponse create(@NotNull @Positive @RequestHeader("X-Sharer-User-Id") Long userId,
+                                    ItemRequestModify request) {
         return itemRequestService.create(userId, request);
     }
 
     @PatchMapping
-    public ItemRequestDto patch(@NotNull @Positive @RequestHeader("X-Sharer-User-Id") Long userId,
-                                ItemRequestDto request) {
+    public ItemRequestResponse patch(@NotNull @Positive @RequestHeader("X-Sharer-User-Id") Long userId,
+                                   ItemRequestModify request) {
         return itemRequestService.patch(userId, request);
     }
 
