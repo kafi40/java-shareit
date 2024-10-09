@@ -1,11 +1,13 @@
 package ru.practicum.shareit.item.dto;
 
-import ru.practicum.shareit.user.dto.UserResponse;
+import java.time.LocalDateTime;
 
 public record CommentResponse(
     Long id,
     String text,
+    LocalDateTime created,
     ItemResponse item,
-    UserResponse author
+    String authorName
 ) {
+
 }

@@ -114,6 +114,7 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new NotFoundException("Бронирование> с ID = " + id + " не найден"));
         if (booking.getItem().getOwner().getId().equals(userId)) {
             booking.setStatus(isAccept ? BookingStatus.APPROVED : BookingStatus.REJECTED);
+            System.out.println(booking.getStatus());
             booking = bookingRepository.save(booking);
             return bookingMapper.toBookingResponse(booking);
         } else {

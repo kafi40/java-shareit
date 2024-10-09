@@ -9,6 +9,7 @@ import ru.practicum.shareit.booking.dto.BookingModify;
 import ru.practicum.shareit.booking.dto.BookingResponse;
 import ru.practicum.shareit.booking.enums.BookingState;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -35,6 +36,8 @@ public class BookingController {
     @PostMapping
     public BookingResponse create(@NotNull @Positive @RequestHeader("X-Sharer-User-Id") Long userId,
                                   @Valid @RequestBody BookingModify request) {
+        System.out.println(LocalDateTime.now());
+        System.out.println(request.getStart());
         return bookingService.create(userId, request);
     }
 
@@ -43,12 +46,10 @@ public class BookingController {
                                  @NotNull @Positive @RequestHeader("X-Sharer-User-Id") Long userId,
                                  @RequestBody(required = false) BookingModify request,
                                  @RequestParam(value = "approved", required = false) Boolean isAccept) {
-        if (isAccept != null && request == null) {
+        if (isAccept != null) {
             return bookingService.acceptBooking(id, userId, isAccept);
-        } else if (isAccept == null && request != null) {
-            return bookingService.patch(id, userId, request);
         } else {
-            return null;
+            return bookingService.patch(id, userId, request);
         }
     }
 

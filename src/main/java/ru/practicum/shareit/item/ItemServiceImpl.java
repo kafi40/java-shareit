@@ -18,6 +18,8 @@ import ru.practicum.shareit.request.ItemRequestMapper;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -33,9 +35,11 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemResponse get(Long id) {
-        return itemRepository.findById(id)
-                .map(itemMapper::toItemResponse)
+        Item item = itemRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Предмет с ID = " + id + " не найден"));
+        List<Comment> comments = commentRepository.findCommentByItem_Id(item.getId());
+        ItemResponse itemResponse = itemMapper.toItemResponseWithComments(item, comments);
+        return itemResponse;
     }
 
     @Override
@@ -56,8 +60,11 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new NotFoundException("Бронирование не найдено"));
         if (booking.getBookingState().equals(BookingState.PAST)) {
             Item item = booking.getItem();
+            User booker = booking.getBooker();
             Comment comment = commentMapper.toComment(commentModify);
             comment.setItem(item);
+            comment.setAuthor(booker);
+            comment.setCreated(Timestamp.from(Instant.now()));
             comment = commentRepository.save(comment);
             return commentMapper.toCommentResponse(comment);
         } else {

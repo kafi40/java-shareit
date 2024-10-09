@@ -17,7 +17,7 @@ public class BookingModify {
     @MinimalId
     private Long id;
     @NotNull(message = "null недопустимое значение для start")
-    @FutureOrPresent(message = "Время начала бронирования не может быть в прошлом")
+//    @FutureOrPresent(message = "Время начала бронирования не может быть в прошлом")
     private LocalDateTime start;
     @NotNull(message = "null недопустимое значение для end")
     @Future(message = "Время окончания бронирования не может быть в прошлом")
