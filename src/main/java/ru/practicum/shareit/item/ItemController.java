@@ -10,6 +10,7 @@ import ru.practicum.shareit.item.dto.CommentResponse;
 import ru.practicum.shareit.item.dto.ItemModify;
 import ru.practicum.shareit.item.dto.ItemResponse;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -49,8 +50,8 @@ public class ItemController {
 
     @GetMapping("/search")
     public List<ItemResponse> search(@RequestParam("text") String text) {
-        if (text == null)
-            return null;
+        if (text.isBlank())
+            return new ArrayList<>();
 
         return itemService.getForSearch(text.toLowerCase());
     }

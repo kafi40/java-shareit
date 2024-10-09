@@ -4,18 +4,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingModify;
 import ru.practicum.shareit.booking.dto.BookingResponse;
+import ru.practicum.shareit.booking.enums.BookingState;
 import ru.practicum.shareit.booking.enums.BookingStatus;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.exception.DateTimeValueInvalid;
-import ru.practicum.shareit.exception.ItemIsUnavailableException;
-import ru.practicum.shareit.exception.NoPermissionException;
-import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.*;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.util.Intersection;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,21 +27,19 @@ public class BookingServiceImpl implements BookingService {
     private final BookingMapper bookingMapper;
 
     @Override
-    public BookingResponse get(Long id) {
-        return bookingRepository.findById(id)
-                .map(bookingMapper::toBookingResponse)
+    public BookingResponse getForUser(Long id, Long userId) {
+        Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Бронирование> с ID = " + id + " не найден"));
-    }
-
-    @Override
-    public List<BookingResponse> getAll() {
-        List<Booking> bookings = bookingRepository.findAll();
-        return bookingMapper.toBookingResponseList(bookings);
+        if (booking.getBooker().getId().equals(userId) || booking.getItem().getOwner().getId().equals(userId)) {
+            return bookingMapper.toBookingResponse(booking);
+        } else {
+            throw new NoPermissionException("Недостаточно прав для данного запроса");
+        }
     }
 
     @Override
     public BookingResponse create(Long userId, BookingModify request) {
-//        checkTimeIntersection(request);
+        checkTimeIntersection(request);
         if (!request.getStart().isBefore(request.getEnd())) {
             throw new DateTimeValueInvalid("Некорректно заданы значения начала и окончания бронирования");
         }
@@ -62,9 +61,9 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingResponse patch(Long id, Long userId, BookingModify request) {
-//        if (request.getStart() != null || request.getEnd() != null) {
-//            checkTimeIntersection(request);
-//        }
+        if (request.getStart() != null || request.getEnd() != null) {
+            checkTimeIntersection(request);
+        }
 
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Бронирование с ID = " + id + " не найдено"));
@@ -122,22 +121,51 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
+    @Override
+    public List<BookingResponse> getAllForBooker(Long bookerId, BookingState state) {
+        userRepository.findById(bookerId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с ID = " + bookerId + " не найден"));
+        List<Booking> bookings = state.equals(BookingState.ALL) ?
+                bookingRepository.findAllByBooker_Id(bookerId) :
+                bookingRepository.findAllByBooker_Id(bookerId).stream()
+                        .filter(booking -> booking.getBookingState().equals(state))
+                        .collect(Collectors.toList());
+        return bookingMapper.toBookingResponseList(bookings);
+    }
 
-//    private void checkTimeIntersection(BookingModify request) {
-//        bookingRepository.findAll().stream()
-//                .filter(booking -> booking.getItem().getId().equals(request.getItem().getId()))
-//                .peek(booking -> {
-//                    if (Intersection.timeIntersection(
-//                            booking.getStart(),
-//                            booking.getEnd(),
-//                            request.getStart(),
-//                            request.getEnd())
-//                    ) {
-//                        if (booking.getStatus().equals(BookingStatus.APPROVED)) {
-//                            throw new DateTimeAlreadyTakenException("Выбранное время уже забронировано");
-//                        }
-//                    }
-//                })
-//                .close();
-//    }
+    @Override
+    public List<BookingResponse> getAllForOwner(Long ownerId, BookingState state) {
+        userRepository.findById(ownerId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с ID = " + ownerId + " не найден"));
+        List<Long> itemsId = itemRepository.findAllByOwnerId(ownerId).stream()
+                .map(Item::getId)
+                .toList();
+        if (itemsId.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<Booking> bookings = state.equals(BookingState.ALL) ?
+                bookingRepository.findAllByItem_IdIn(itemsId) :
+                bookingRepository.findAllByItem_IdIn(itemsId).stream()
+                        .filter(booking -> booking.getBookingState().equals(state))
+                        .collect(Collectors.toList());
+        return bookingMapper.toBookingResponseList(bookings);
+    }
+
+
+    private void checkTimeIntersection(BookingModify request) {
+        bookingRepository.findAllByItem_Id(request.getItemId()).stream()
+                .peek(booking -> {
+                    if (Intersection.timeIntersection(
+                            booking.getStart(),
+                            booking.getEnd(),
+                            request.getStart(),
+                            request.getEnd())
+                    ) {
+                        if (booking.getStatus().equals(BookingStatus.APPROVED)) {
+                            throw new DateTimeAlreadyTakenException("Выбранное время уже забронировано");
+                        }
+                    }
+                })
+                .close();
+    }
 }

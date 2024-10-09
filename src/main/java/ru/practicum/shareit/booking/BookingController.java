@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingModify;
 import ru.practicum.shareit.booking.dto.BookingResponse;
+import ru.practicum.shareit.booking.enums.BookingState;
 
 import java.util.List;
 
@@ -17,13 +18,18 @@ public class BookingController {
     private final BookingService bookingService;
 
     @GetMapping("/{id}")
-    public BookingResponse get(@PathVariable Long id) {
-        return bookingService.get(id);
+    public BookingResponse getForUser(@PathVariable Long id,
+                                      @NotNull @Positive @RequestHeader("X-Sharer-User-Id") Long userId) {
+        return bookingService.getForUser(id, userId);
     }
 
     @GetMapping
-    public List<BookingResponse> getAll() {
-        return bookingService.getAll();
+    public List<BookingResponse> getAllForBooker(@NotNull @Positive @RequestHeader("X-Sharer-User-Id") Long bookerId,
+                                                 @RequestParam(
+                                                         value = "state",
+                                                         required = false,
+                                                         defaultValue = "ALL") BookingState state) {
+        return bookingService.getAllForBooker(bookerId, state);
     }
 
     @PostMapping
@@ -50,5 +56,14 @@ public class BookingController {
     public void delete(@PathVariable Long id,
                        @NotNull @Positive @RequestHeader("X-Sharer-User-Id") Long userId) {
         bookingService.delete(id, userId);
+    }
+
+    @GetMapping("/owner")
+    public List<BookingResponse> getAllForOwner(@NotNull @Positive @RequestHeader("X-Sharer-User-Id") Long userId,
+                                                @RequestParam(
+                                                        value = "state",
+                                                        required = false,
+                                                        defaultValue = "ALL") BookingState state) {
+        return bookingService.getAllForOwner(userId, state);
     }
 }

@@ -34,6 +34,7 @@ public class Booking {
     public BookingState getBookingState() {
         LocalDateTime now = LocalDateTime.now();
         BookingState bookingState = null;
+        System.out.println(status);
         switch (status) {
             case APPROVED -> {
                 if (now.isAfter(start) && now.isBefore(end)) bookingState = BookingState.CURRENT;

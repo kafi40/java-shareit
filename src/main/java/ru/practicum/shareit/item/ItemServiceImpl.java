@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.enums.BookingState;
-import ru.practicum.shareit.booking.enums.BookingStatus;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.exception.LeaveCommentException;
 import ru.practicum.shareit.exception.NoPermissionException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.CommentModify;
@@ -46,7 +46,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemResponse> getForSearch(String text) {
-        List<Item> items =  itemRepository.findAllByNameLikeIgnoreCase(text);
+        List<Item> items =  itemRepository.findAllByNameOrDescription(text);
         return itemMapper.toItemResponseList(items);
     }
 
@@ -54,11 +54,6 @@ public class ItemServiceImpl implements ItemService {
     public CommentResponse createComment(Long itemId, Long bookerId, CommentModify commentModify) {
         Booking booking = bookingRepository.findByItem_IdAndBooker_Id(itemId, bookerId)
                 .orElseThrow(() -> new NotFoundException("Бронирование не найдено"));
-        System.out.println(booking);
-        System.out.println(booking.getStart());
-        System.out.println(booking.getEnd());
-        System.out.println(booking.getStatus());
-        System.out.println(booking.getBookingState());
         if (booking.getBookingState().equals(BookingState.PAST)) {
             Item item = booking.getItem();
             Comment comment = commentMapper.toComment(commentModify);
@@ -66,7 +61,7 @@ public class ItemServiceImpl implements ItemService {
             comment = commentRepository.save(comment);
             return commentMapper.toCommentResponse(comment);
         } else {
-            throw new NoPermissionException("Вы не можете оставить комментарий");
+            throw new LeaveCommentException("Вы не можете оставить комментарий");
         }
     }
 

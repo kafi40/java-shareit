@@ -67,5 +67,9 @@ public class ErrorHandler {
         );
     }
 
-
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> leaveCommentException(final LeaveCommentException e) {
+        return Map.of("error:", e.getMessage());
+    }
 }

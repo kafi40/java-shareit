@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking.dto;
 
 import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Builder;
@@ -16,7 +17,7 @@ public class BookingModify {
     @MinimalId
     private Long id;
     @NotNull(message = "null недопустимое значение для start")
-    @Future(message = "Время начала бронирования не может быть в прошлом")
+    @FutureOrPresent(message = "Время начала бронирования не может быть в прошлом")
     private LocalDateTime start;
     @NotNull(message = "null недопустимое значение для end")
     @Future(message = "Время окончания бронирования не может быть в прошлом")
