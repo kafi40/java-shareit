@@ -3,25 +3,23 @@ package ru.practicum.shareit.item.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
 import lombok.Data;
 import ru.practicum.shareit.annotation.MinimalId;
-import ru.practicum.shareit.request.dto.ItemRequestDto;
-import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.request.dto.ItemRequestModify;
+import ru.practicum.shareit.user.dto.UserModify;
 
 @Data
-@Builder
-public class ItemDto {
+public class ItemModify {
     @MinimalId
     private Long id;
-    @NotBlank
+    @NotBlank(message = "Необходимо указать имя")
     private String name;
-    @NotBlank
+    @NotBlank(message = "Необходимо указать  описание")
     private String description;
-    @NotNull
+    @NotNull(message = "null недопустимое значение для available")
     private Boolean available;
-    private UserDto owner;
-    private ItemRequestDto itemRequestDto;
+    private UserModify owner;
+    private ItemRequestModify itemRequestModify;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer rentCount;
 }

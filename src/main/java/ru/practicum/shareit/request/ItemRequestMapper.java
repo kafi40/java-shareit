@@ -1,24 +1,18 @@
 package ru.practicum.shareit.request;
 
-import ru.practicum.shareit.request.dto.ItemRequestDto;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants;
+import ru.practicum.shareit.request.dto.ItemRequestModify;
+import ru.practicum.shareit.request.dto.ItemRequestResponse;
 import ru.practicum.shareit.request.model.ItemRequest;
-import ru.practicum.shareit.user.UserMapper;
 
-public class ItemRequestMapper {
-    public static ItemRequestDto mapTo(ItemRequest itemRequest) {
-        return ItemRequestDto.builder()
-                .id(itemRequest.getId())
-                .description(itemRequest.getDescription())
-                .requestor(UserMapper.mapTo(itemRequest.getRequestor()))
-                .created(itemRequest.getCreated())
-                .build();
-    }
+import java.util.List;
 
-    public static ItemRequest mapFrom(ItemRequestDto itemRequestDto) {
-        return ItemRequest.builder()
-                .description(itemRequestDto.getDescription())
-                .requestor(UserMapper.mapFrom(itemRequestDto.getRequestor()))
-                .created(itemRequestDto.getCreated())
-                .build();
-    }
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+public interface ItemRequestMapper {
+    ItemRequestResponse toItemRequestResponse(ItemRequest itemRequest);
+
+    List<ItemRequestResponse> toItemRequestResponseList(List<ItemRequest> itemRequests);
+
+    ItemRequest toItemRequest(ItemRequestModify itemRequestModify);
 }
