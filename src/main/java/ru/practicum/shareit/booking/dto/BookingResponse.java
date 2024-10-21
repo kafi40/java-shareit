@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking.dto;
 
 import lombok.Builder;
+import ru.practicum.shareit.booking.enums.BookingState;
 import ru.practicum.shareit.booking.enums.BookingStatus;
 import ru.practicum.shareit.item.dto.ItemResponse;
 import ru.practicum.shareit.user.dto.UserResponse;
@@ -14,6 +15,7 @@ public record BookingResponse(
         LocalDateTime end,
         ItemResponse item,
         UserResponse booker,
-        BookingStatus status
+        BookingStatus status,
+        BookingState state
 ) {
 }

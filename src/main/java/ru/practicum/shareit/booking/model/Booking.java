@@ -2,7 +2,6 @@ package ru.practicum.shareit.booking.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import ru.practicum.shareit.booking.enums.BookingState;
 import ru.practicum.shareit.booking.enums.BookingStatus;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
@@ -30,23 +29,4 @@ public class Booking {
     @JoinColumn(name = "booker_id")
     @ManyToOne
     private User booker;
-
-    public BookingState getBookingState() {
-        LocalDateTime now = LocalDateTime.now();
-        BookingState bookingState = null;
-        System.out.println(status);
-        switch (status) {
-            case APPROVED -> {
-                if (now.isAfter(start) && now.isBefore(end)) bookingState = BookingState.CURRENT;
-                else if (now.isBefore(start)) bookingState = BookingState.FUTURE;
-                else if (now.isAfter(end)) bookingState = BookingState.PAST;
-            }
-            case WAITING -> {
-                if (now.isBefore(start)) bookingState = BookingState.WAITING;
-                else if (now.isAfter(start)) bookingState = BookingState.REJECTED;
-            }
-            case REJECTED -> bookingState = BookingState.REJECTED;
-        }
-        return bookingState;
-    }
 }
