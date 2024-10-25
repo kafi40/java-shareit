@@ -1,7 +1,9 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.booking.enums.BookingState;
@@ -30,6 +32,8 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
+@Slf4j
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
@@ -41,7 +45,9 @@ public class ItemServiceImpl implements ItemService {
     private final BookingMapper bookingMapper;
 
     @Override
+    @Transactional(readOnly = true)
     public ItemResponse getItem(long itemId) {
+        log.info("Server: Method getItem begin");
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Предмет с ID = " + itemId + " не найден"));
         List<Comment> comments = commentRepository.findCommentByItem_Id(item.getId());
@@ -49,19 +55,24 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemResponse> getAllForUser(long userId) {
+    @Transactional(readOnly = true)
+    public List<ItemResponse> getItemsForUser(long userId) {
+        log.info("Server: Method getItemsForUser begin");
         List<Item> items = itemRepository.findAllByOwnerId(userId);
         return itemMapper.toItemResponseList(items);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ItemResponse> getBySearch(String text) {
+        log.info("Server: Method getBySearch begin");
         List<Item> items =  itemRepository.findAllByNameOrDescription(text);
         return itemMapper.toItemResponseList(items);
     }
 
     @Override
     public CommentResponse createComment(long itemId, long bookerId, CommentDto commentDTO) {
+        log.info("Server: Method createComment begin");
         Booking booking = bookingRepository.findByItem_IdAndBooker_Id(itemId, bookerId)
                 .orElseThrow(() -> new NotFoundException("Бронирование не найдено"));
         if (bookingMapper.getState(booking).equals(BookingState.PAST)) {
@@ -80,6 +91,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemResponse createItem(long userId, ItemDto request) {
+        log.info("Server: Method createItem begin");
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID = " + userId + " не найден"));
         Item item = itemMapper.toItem(request);
@@ -95,6 +107,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemResponse patchItem(long itemId, long userId, ItemDto request) {
+        log.info("Server: Method patchItem begin");
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID = " + userId + " не найден"));
 
@@ -118,6 +131,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public void deleteItem(long itemId, long userId) {
+        log.info("Server: Method deleteItem begin");
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Предмет с ID = " + itemId + " не найден"));
 

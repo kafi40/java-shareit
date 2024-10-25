@@ -11,10 +11,8 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import ru.practicum.shareit.booking.dto.BookItemRequestDto;
+import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingState;
-
-import java.util.List;
 
 
 @Controller
@@ -46,7 +44,7 @@ public class BookingController {
 
 	@PostMapping
 	public ResponseEntity<Object> bookItem(@RequestHeader("X-Sharer-User-Id") long userId,
-			@RequestBody @Valid BookItemRequestDto request) {
+			@RequestBody @Valid BookingDto request) {
 		log.info("Gateway received: Create booking={} by user with id={}", request, userId);
 		return bookingClient.createBooking(userId, request);
 	}
@@ -58,7 +56,7 @@ public class BookingController {
 										@RequestParam(value = "approved", required = false) Boolean isAccept) {
 		if (isAccept != null) {
 			log.info("Gateway received: Accept booking with id={} by user with id={}", bookingId, userId);
-			return bookingClient.acceptBooking(bookingId, userId, isAccept);
+			return bookingClient.acceptBooking(bookingId, userId, isAccept, request);
 		} else {
 			log.info("Gateway received: Patch booking={} by user with id={}", request, userId);
 			return bookingClient.patchBooking(bookingId, userId, request);

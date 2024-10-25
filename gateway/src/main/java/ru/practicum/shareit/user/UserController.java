@@ -17,10 +17,10 @@ import ru.practicum.shareit.user.dto.UserDto;
 public class UserController {
     private final UserClient userClient;
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Object> getUser(@PathVariable Long id) {
-        log.info("Gate received: Get user with id {}", id);
-        return userClient.getUser(id);
+    @GetMapping("/{userId}")
+    public ResponseEntity<Object> getUser(@PathVariable Long userId) {
+        log.info("Gate received: Get user with id {}", userId);
+        return userClient.getUser(userId);
     }
 
     @PostMapping
@@ -29,15 +29,15 @@ public class UserController {
         return userClient.createUser(request);
     }
 
-    @PatchMapping("/{id}")
-    public ResponseEntity<Object> patch(@PathVariable Long id, @RequestBody UserDto request) {
-        log.info("Gate received: Patch user {} with id {}", request, id);
-        return userClient.patchUser(id, request);
+    @PatchMapping("/{userId}")
+    public ResponseEntity<Object> patch(@PathVariable Long userId, @RequestBody UserDto request) {
+        log.info("Gate received: Patch user {} with id {}", request, userId);
+        return userClient.patchUser(userId, request);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Object> delete(@PathVariable Long id) {
-        log.info("Gate received: Delete user with id {}", id);
-        return userClient.deleteUser(id);
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Object> delete(@PathVariable Long userId) {
+        log.info("Gate received: Delete user with id {}", userId);
+        return userClient.deleteUser(userId);
     }
 }

@@ -16,7 +16,7 @@ public interface ItemService {
 
     void deleteItem(long itemId, long userId);
 
-    List<ItemResponse> getAllForUser(long userId);
+    List<ItemResponse> getItemsForUser(long userId);
 
     List<ItemResponse> getBySearch(String text);
 

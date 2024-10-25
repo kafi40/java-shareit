@@ -14,5 +14,5 @@ public class ItemRequestDto {
     private String description;
     @Positive
     private Long requestor;
-    private LocalDateTime created;
+    private LocalDateTime created = LocalDateTime.now();
 }

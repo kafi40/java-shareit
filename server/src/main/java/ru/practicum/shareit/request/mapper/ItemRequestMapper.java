@@ -10,9 +10,10 @@ import java.util.List;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface ItemRequestMapper {
+
     ItemRequestResponse toItemRequestResponse(ItemRequest itemRequest);
 
     List<ItemRequestResponse> toItemRequestResponseList(List<ItemRequest> itemRequests);
 
-    ItemRequest toItemRequest(ItemRequestDto itemRequestDTO);
+    ItemRequest toItemRequest(ItemRequestDto itemRequestDto);
 }

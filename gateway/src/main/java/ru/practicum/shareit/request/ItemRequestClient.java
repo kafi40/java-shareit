@@ -8,6 +8,7 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.shareit.client.BaseClient;
+import ru.practicum.shareit.request.dto.ItemRequestDto;
 
 @Service
 public class ItemRequestClient extends BaseClient {
@@ -23,7 +24,27 @@ public class ItemRequestClient extends BaseClient {
         );
     }
 
-    public ResponseEntity<Object> getBooking(long userId, Long bookingId) {
-        return get("/" + bookingId, userId);
+    public ResponseEntity<Object> getItemRequest(long bookingId) {
+        return get("/" + bookingId);
+    }
+
+    public ResponseEntity<Object> getItemRequestForRequestor(long userId) {
+        return get("", userId);
+    }
+
+    public ResponseEntity<Object> createItemRequest(long userId, ItemRequestDto request) {
+        return post("", userId, request);
+    }
+
+    public ResponseEntity<Object> patchItemRequest(long userId, ItemRequestDto request) {
+        return patch("", userId, request);
+    }
+
+    public ResponseEntity<Object> deleteItemRequest(long userId, long itemRequestId) {
+        return delete("/" + itemRequestId, userId);
+    }
+
+    public ResponseEntity<Object> getItemRequestForOther(long userId) {
+        return get("/all", userId);
     }
 }
