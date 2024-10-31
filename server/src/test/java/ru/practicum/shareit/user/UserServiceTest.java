@@ -1,26 +1,87 @@
 package ru.practicum.shareit.user;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
+import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.factory.ModelFactory;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserResponse;
-import ru.practicum.shareit.user.mapper.UserMapper;
-import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
-import ru.practicum.shareit.user.service.UserServiceImpl;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+
+
+@Transactional
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@SpringBootTest
 public class UserServiceTest {
+    private final UserService userService;
+    private final EntityManager em;
+    private UserDto userDto;
+    private UserResponse userResponse;
+
+    @BeforeEach
+    void beforeEach() {
+        userDto = ModelFactory.createUserDto();
+        userResponse = userService.createUser(userDto);
+    }
+
 
     @Test
-    public void testGetUser() {
-        UserRepository mockUserRepository = Mockito.mock(UserRepository.class);
-        UserMapper userMapper = Mockito.mock(UserMapper.class);
-        UserService userService = new UserServiceImpl(mockUserRepository, userMapper);
+    void testGetUser() {
+        userResponse = userService.getUser(userResponse.id());
 
-        UserDto userDto = new UserDto();
-        userDto.setEmail("test@ya.ru");
+        TypedQuery<User> query = em.createQuery("SELECT u FROM User AS u WHERE u.id = :id", User.class);
+        User user = query.setParameter("id", userResponse.id())
+                .getSingleResult();
 
-        UserResponse userResponse = userService.createUser(userDto);
-        System.out.println(userResponse);
+        assertThat(user.getId(), notNullValue());
+        assertThat(user.getName(), equalTo(userResponse.name()));
+        assertThat(user.getEmail(), equalTo(userResponse.email()));
+    }
+
+    @Test
+    @Rollback
+    void testCreateUser() {
+        TypedQuery<User> query = em.createQuery("SELECT u FROM User AS u WHERE u.id = :id", User.class);
+        User user = query.setParameter("id", userResponse.id())
+                        .getSingleResult();
+
+        assertThat(user.getId(), notNullValue());
+        assertThat(user.getName(), equalTo(userDto.getName()));
+        assertThat(user.getEmail(), equalTo(userDto.getEmail()));
+    }
+
+    @Test
+    @Rollback
+    void testPatchUser() {
+        userDto = ModelFactory.createUserDto();
+        userResponse = userService.patchUser(userResponse.id(), userDto);
+
+        TypedQuery<User> query = em.createQuery("SELECT u FROM User AS u WHERE u.id = :id", User.class);
+        User user = query.setParameter("id", userResponse.id())
+                .getSingleResult();
+
+        assertThat(user.getId(), notNullValue());
+        assertThat(user.getName(), equalTo(userDto.getName()));
+        assertThat(user.getEmail(), equalTo(userDto.getEmail()));
+    }
+
+    @Test
+    void testDeleteUser() {
+        userService.deleteUser(userResponse.id());
+
+        TypedQuery<User> query = em.createQuery("SELECT u FROM User AS u WHERE u.id = :id", User.class);
+        int count = query.setParameter("id", userResponse.id()).getFirstResult();
+
+        assertThat(count, equalTo(0));
     }
 }

@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDto;
@@ -100,7 +101,7 @@ public class BookingServiceImpl implements BookingService {
                 throw new NoPermissionException("Недостаточно прав для данного запроса");
             }
         }
-        booking = bookingRepository.save(bookingMapper.toBooking(request));
+        booking = bookingRepository.save(booking);
         return bookingMapper.toBookingResponse(booking);
     }
 
@@ -133,14 +134,14 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<BookingResponse> getBookings(long bookerId, BookingState state, long from, long size) {
+    public List<BookingResponse> getBookings(long bookerId, BookingState state, int from, int size) {
         log.info("Server: Method getBookings begin");
         userRepository.findById(bookerId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID = " + bookerId + " не найден"));
-
+        PageRequest page = PageRequest.of(from > 0 ? from / size : 0, size);
         return state.equals(BookingState.ALL) ?
-                bookingMapper.toBookingResponseList(bookingRepository.findAllByBooker_Id(bookerId)) :
-                bookingRepository.findAllByBooker_Id(bookerId).stream()
+                bookingMapper.toBookingResponseList(bookingRepository.findAllByBooker_Id(bookerId, page)) :
+                bookingRepository.findAllByBooker_Id(bookerId, page).stream()
                         .map(bookingMapper::toBookingResponse)
                         .filter(bookingResponse -> bookingResponse.state().equals(state))
                         .toList();

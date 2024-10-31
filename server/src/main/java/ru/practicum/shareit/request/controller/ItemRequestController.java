@@ -3,6 +3,7 @@ package ru.practicum.shareit.request.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.request.dto.ItemRequestWithItems;
 import ru.practicum.shareit.request.service.ItemRequestService;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemRequestResponse;
@@ -17,13 +18,13 @@ public class ItemRequestController {
     private final ItemRequestService itemRequestService;
 
     @GetMapping("/{itemRequestId}")
-    public ItemRequestResponse getItemRequest(@PathVariable Long itemRequestId) {
+    public ItemRequestWithItems getItemRequest(@PathVariable Long itemRequestId) {
         log.info("Server received: Get itemRequest with id={}", itemRequestId);
         return itemRequestService.getItemRequest(itemRequestId);
     }
 
     @GetMapping
-    public List<ItemRequestResponse> getItemRequestForRequestor(@RequestHeader("X-Sharer-User-Id") Long userId) {
+    public List<ItemRequestWithItems> getItemRequestForRequestor(@RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info("Server received: Get itemRequests for requestor with id={}", userId);
         return itemRequestService.getItemRequestForRequestor(userId);
     }
@@ -40,7 +41,7 @@ public class ItemRequestController {
                                                 @RequestHeader("X-Sharer-User-Id") Long userId,
                                                 @RequestBody ItemRequestDto request) {
         log.info("Server received: Patch itemRequest={} with id={} by user with id={}", request, itemRequestId, userId);
-        return itemRequestService.patchItemRequest(userId, request);
+        return itemRequestService.patchItemRequest(itemRequestId, userId, request);
     }
 
     @DeleteMapping("/{itemRequestId}")
@@ -53,6 +54,6 @@ public class ItemRequestController {
     @GetMapping("/all")
     public List<ItemRequestResponse> getItemRequestForOther(@RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info("Server received: Get other user's itemRequests for user with id={}", userId);
-        return itemRequestService.getItemRequestForRequestor(userId);
+        return itemRequestService.getItemRequestForOther(userId);
     }
 }

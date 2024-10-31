@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking.repository;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.booking.model.Booking;
@@ -11,7 +12,7 @@ import java.util.Optional;
 public interface BookingRepository extends JpaRepository<Booking, Long> {
     Optional<Booking> findByItem_IdAndBooker_Id(Long itemId,  Long bookerId);
 
-    List<Booking> findAllByBooker_Id(Long bookerId);
+    List<Booking> findAllByBooker_Id(Long bookerId, Pageable page);
 
     List<Booking> findAllByItem_Id(Long itemId);
 

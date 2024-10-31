@@ -24,7 +24,6 @@ public class BookingController {
         return bookingService.getBookingForUser(bookingId, userId);
     }
 
-//    Доделать пагинацию
     @GetMapping
     public List<BookingResponse> getBookings(
             @RequestHeader("X-Sharer-User-Id") long userId,

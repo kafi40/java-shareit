@@ -4,6 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemResponse;
+import ru.practicum.shareit.item.dto.ItemShortResponse;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 
@@ -18,4 +19,8 @@ public interface ItemMapper {
     List<ItemResponse> toItemResponseList(List<Item> items);
 
     Item toItem(ItemDto itemDTO);
+
+    ItemShortResponse toItemShortResponse(Item item);
+
+    List<ItemShortResponse> toItemShortResponses(List<Item> items);
 }

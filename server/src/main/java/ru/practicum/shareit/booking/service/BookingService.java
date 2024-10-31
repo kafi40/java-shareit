@@ -17,7 +17,7 @@ public interface BookingService {
 
     BookingResponse acceptBooking(long bookingId, long userId, boolean isAccept);
 
-    List<BookingResponse> getBookings(long bookerId, BookingState state, long from, long size);
+    List<BookingResponse> getBookings(long bookerId, BookingState state, int from, int size);
 
     List<BookingResponse> getBookingsForOwner(long ownerId, BookingState state);
 }
