@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingState;
+import ru.practicum.shareit.exception.DateTimeValueInvalid;
 
 
 @Controller
@@ -46,6 +47,9 @@ public class BookingController {
 	public ResponseEntity<Object> bookItem(@RequestHeader("X-Sharer-User-Id") long userId,
 			@RequestBody @Valid BookingDto request) {
 		log.info("Gateway received: Create booking={} by user with id={}", request, userId);
+		if (!request.getStart().isBefore(request.getEnd())) {
+			throw new DateTimeValueInvalid("Некорректно заданы значения начала и окончания бронирования");
+		}
 		return bookingClient.createBooking(userId, request);
 	}
 

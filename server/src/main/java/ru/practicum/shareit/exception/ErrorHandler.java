@@ -33,12 +33,6 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> dateTimeValueInvalid(final DateTimeValueInvalid e) {
-        return Map.of("error:", e.getMessage());
-    }
-
-    @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> notFoundException(final  NotFoundException e) {
         return Map.of("error", e.getMessage());

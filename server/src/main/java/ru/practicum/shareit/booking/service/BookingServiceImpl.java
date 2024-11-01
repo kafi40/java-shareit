@@ -48,9 +48,6 @@ public class BookingServiceImpl implements BookingService {
     public BookingResponse createBooking(long userId, BookingDto request) {
         log.info("Server: Method createBooking begin");
         checkTimeIntersection(request);
-        if (!request.getStart().isBefore(request.getEnd())) {
-            throw new DateTimeValueInvalid("Некорректно заданы значения начала и окончания бронирования");
-        }
         request.setStatus(BookingStatus.WAITING);
         User booker = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID = " + userId + " не найден"));
@@ -70,35 +67,37 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingResponse patchBooking(long bookingId, long userId, BookingDto request) {
         log.info("Server: Method patchBooking begin");
-        if (request.getStart() != null || request.getEnd() != null) {
-            checkTimeIntersection(request);
-        }
-
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Бронирование с ID = " + bookingId + " не найдено"));
+        boolean isBooker = booking.getBooker().getId() == userId;
+        boolean isOwner = booking.getItem().getOwner().getId() == userId;
 
-        long bookerId = booking.getBooker().getId();
-        long ownerId = booking.getItem().getOwner().getId();
-        if (request.getStart() != null && userId == bookingId) {
-            booking.setStart(request.getStart());
+        if (!isOwner && !isBooker) {
+            throw new NoPermissionException("Недостаточно прав для данного запроса");
         }
-        if (request.getEnd() != null && userId == bookingId) {
-            booking.setEnd(request.getEnd());
+        if (isOwner && (request.getStart() != null || request.getEnd() != null)) {
+            throw new NoPermissionException("Недостаточно прав для данного запроса");
+        } else {
+            checkTimeIntersection(request);
+            if (request.getStart() != null) {
+                booking.setStart(request.getStart());
+            }
+            if (request.getEnd() != null) {
+                booking.setEnd(request.getEnd());
+            }
         }
         if (request.getStatus() != null) {
-            if (userId == bookerId) {
+            if (isBooker) {
                 if (request.getStatus() == BookingStatus.CANCELED) {
                     booking.setStatus(request.getStatus());
                 } else {
                     throw new NoPermissionException("Недостаточно прав для данного запроса");
                 }
-            } else if (userId == ownerId) {
+            } else {
                 switch (request.getStatus()) {
                     case APPROVED, REJECTED -> booking.setStatus(request.getStatus());
                     default -> throw new NoPermissionException("Недостаточно прав для данного запроса");
                 }
-            } else {
-                throw new NoPermissionException("Недостаточно прав для данного запроса");
             }
         }
         booking = bookingRepository.save(booking);
@@ -169,19 +168,13 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private void checkTimeIntersection(BookingDto request) {
-        bookingRepository.findAllByItem_Id(request.getItemId()).stream()
-                .peek(booking -> {
-                    if (Intersection.timeIntersection(
-                            booking.getStart(),
-                            booking.getEnd(),
-                            request.getStart(),
-                            request.getEnd())
-                    ) {
-                        if (booking.getStatus().equals(BookingStatus.APPROVED)) {
-                            throw new DateTimeAlreadyTakenException("Выбранное время уже забронировано");
-                        }
-                    }
-                })
-                .close();
+        List<Booking> bookings = bookingRepository.findAllByItem_Id(request.getItemId());
+        for (Booking booking : bookings) {
+            if (Intersection.timeIntersection(request.getStart(), request.getEnd(), booking.getStart(), booking.getEnd())) {
+                if (booking.getStatus() == BookingStatus.APPROVED) {
+                    throw new DateTimeAlreadyTakenException("На данное время предмет забронирован");
+                }
+            }
+        }
     }
 }
