@@ -43,14 +43,14 @@ public class ItemRequestControllerTest {
         when(itemRequestService.getItemRequest(itemRequestId)).thenReturn(itemRequestWithItems);
 
         mockMvc.perform(get("/requests/" + itemRequestId)
-                        .content(mapper.writeValueAsString(itemRequestResponse))
+                        .content(mapper.writeValueAsString(itemRequestWithItems))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(itemRequestResponse.id()), Long.class))
-                .andExpect(jsonPath("$.description", is(itemRequestResponse.description()), String.class))
+                .andExpect(jsonPath("$.id", is(itemRequestWithItems.id()), Long.class))
+                .andExpect(jsonPath("$.description", is(itemRequestWithItems.description()), String.class))
                 .andExpect(jsonPath("requestor").exists())
-                .andExpect(jsonPath("$.created", is(itemRequestResponse.created().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)), LocalDateTime.class))
+                .andExpect(jsonPath("$.created", is(itemRequestWithItems.created().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)), LocalDateTime.class))
                 .andExpect(jsonPath("requestor").exists());
 
         verify(itemRequestService, times(1)).getItemRequest(itemRequestId);
@@ -63,7 +63,7 @@ public class ItemRequestControllerTest {
         mockMvc.perform(get("/requests")
                         .header("X-sharer-User-Id", userId)
                         .param("state", "ALL")
-                        .content(mapper.writeValueAsString(itemRequestResponse))
+                        .content(mapper.writeValueAsString(itemRequestWithItems))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
