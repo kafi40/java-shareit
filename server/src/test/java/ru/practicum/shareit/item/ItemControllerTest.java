@@ -41,7 +41,6 @@ public class ItemControllerTest {
     @Test
     void testGetItem() throws Exception {
         when(itemService.getItem(itemId)).thenReturn(itemResponse);
-
         mockMvc.perform(get("/items/" + itemId)
                         .content(mapper.writeValueAsString(itemResponse))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -58,7 +57,6 @@ public class ItemControllerTest {
     @Test
     void testCreateItem() throws Exception {
         when(itemService.createItem(eq(userId), any(ItemDto.class))).thenReturn(itemResponse);
-
         mockMvc.perform(post("/items")
                         .header("X-sharer-User-Id", userId)
                         .content(mapper.writeValueAsString(itemResponse))
@@ -70,14 +68,12 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$.description", is(itemResponse.description()), String.class))
                 .andExpect(jsonPath("$.available", is(itemResponse.available()), Boolean.class))
                 .andExpect(jsonPath("$.owner.id", is(itemResponse.owner().id()), Long.class));
-
         verify(itemService, times(1)).createItem(eq(userId), any(ItemDto.class));
     }
 
     @Test
     void testPatchItem() throws Exception {
         when(itemService.patchItem(eq(userId), eq(itemId), any(ItemDto.class))).thenReturn(itemResponse);
-        
         mockMvc.perform(patch("/items/" + itemId)
                         .header("X-sharer-User-Id", userId)
                         .content(mapper.writeValueAsString(itemResponse))
@@ -89,7 +85,6 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$.description", is(itemResponse.description()), String.class))
                 .andExpect(jsonPath("$.available", is(itemResponse.available()), Boolean.class))
                 .andExpect(jsonPath("owner").exists());
-
         verify(itemService, times(1)).patchItem(eq(userId), eq(itemId), any(ItemDto.class));
     }
 
@@ -100,7 +95,6 @@ public class ItemControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
-
         verify(itemService, times(1)).deleteItem(eq(itemId), eq(userId));
 
     }
@@ -108,7 +102,6 @@ public class ItemControllerTest {
     @Test
     void testGetItemsForUser() throws Exception {
         when(itemService.getItemsForUser(userId)).thenReturn(List.of(itemResponse));
-
         mockMvc.perform(get("/items")
                         .header("X-sharer-User-Id", userId)
                         .content(mapper.writeValueAsString(itemResponse))
@@ -116,14 +109,12 @@ public class ItemControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.*", hasSize(1)));
-
         verify(itemService, times(1)).getItemsForUser(userId);
     }
 
     @Test
     void testSearchItem() throws Exception {
         when(itemService.getBySearch(anyString())).thenReturn(List.of(itemResponse));
-
         mockMvc.perform(get("/items/search")
                         .param("text", "test")
                         .content(mapper.writeValueAsString(itemResponse))
@@ -131,14 +122,12 @@ public class ItemControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.*", hasSize(1)));
-
         verify(itemService, times(1)).getBySearch(anyString());
     }
 
     @Test
     void testCreateComment() throws Exception {
         when(itemService.createComment(eq(itemId), eq(userId), any(CommentDto.class))).thenReturn(commentResponse);
-
         mockMvc.perform(post("/items/" + itemId + "/comment")
                         .header("X-sharer-User-Id", userId)
                         .content(mapper.writeValueAsString(commentResponse))
@@ -150,7 +139,6 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$.created", is(commentResponse.created().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)), LocalDateTime.class))
                 .andExpect(jsonPath("item").exists())
                 .andExpect(jsonPath("$.authorName", is(commentResponse.authorName()), String.class));
-
         verify(itemService, times(1)).createComment(eq(itemId), eq(userId), any(CommentDto.class));
     }
 }
