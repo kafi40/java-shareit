@@ -10,6 +10,7 @@
 	</parent>
 
 	<groupId>ru.practicum</groupId>
+
 	<artifactId>shareit</artifactId>
 	<packaging>pom</packaging>
 	<version>0.0.1-SNAPSHOT</version>

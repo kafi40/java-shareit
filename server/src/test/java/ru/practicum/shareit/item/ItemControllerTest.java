@@ -37,6 +37,7 @@ public class ItemControllerTest {
     private final Long userId = 1L;
     private final ItemResponse itemResponse = ModelFactory.createItemResponse(itemId);
     private final CommentResponse commentResponse = ModelFactory.createCommentResponse(itemId);
+
     @Test
     void testGetItem() throws Exception {
         when(itemService.getItem(itemId)).thenReturn(itemResponse);
