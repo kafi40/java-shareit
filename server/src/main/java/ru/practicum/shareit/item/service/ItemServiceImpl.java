@@ -51,7 +51,8 @@ public class ItemServiceImpl implements ItemService {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Предмет с ID = " + itemId + " не найден"));
         List<Comment> comments = commentRepository.findCommentByItem_Id(item.getId());
-        return itemMapper.toItemResponseWithComments(item, comments);
+        List<CommentResponse> commentResponses = commentMapper.toCommentResponseList(comments);
+        return itemMapper.toItemResponseWithComments(item, commentResponses);
     }
 
     @Override

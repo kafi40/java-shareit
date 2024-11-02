@@ -7,18 +7,19 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingResponse;
 import ru.practicum.shareit.booking.enums.BookingState;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.item.mapper.ItemMapper;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = ItemMapper.class)
 public interface BookingMapper {
     @Mapping(target = "state", source = ".")
     BookingResponse toBookingResponse(Booking booking);
 
     List<BookingResponse> toBookingResponseList(List<Booking> bookings);
 
-    Booking toBooking(BookingDto bookingDTO);
+    Booking toBooking(BookingDto bookingDto);
 
     default BookingState getState(Booking booking) {
         LocalDateTime now = LocalDateTime.now();
